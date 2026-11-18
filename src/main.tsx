@@ -43,8 +43,12 @@ const techSkills = [
  {name:'Python',category:'Backend & Languages',icon:'/tech/python.svg',source:'Software & AI Practice'},
  {name:'Node.js',category:'Backend & Languages',icon:'/tech/nodejs.svg',source:'JS Server & Tooling'},
  {name:'Google Gemini',category:'AI, Logic & Data',icon:'/tech/gemini.svg',source:'FoodWasteAI · Generative AI'},
+ {name:'Claude',category:'AI, Logic & Data',icon:'/tech/claude.svg',source:'Anthropic AI Assistant'},
+ {name:'Codex',category:'AI, Logic & Data',icon:'/tech/codex.svg',source:'OpenAI Coding Agent'},
+ {name:'Antigravity',category:'AI, Logic & Data',icon:'/tech/antigravity.svg',source:'Google Agentic Dev Platform'},
  {name:'SWI-Prolog',category:'AI, Logic & Data',icon:'/tech/prolog.svg',source:'FoodWasteAI · Logic Reasoning'},
  {name:'MySQL',category:'AI, Logic & Data',icon:'/tech/mysql.svg',source:'DBMS (A−) · studenthub · FoodWasteAI'},
+ {name:'Supabase',category:'AI, Logic & Data',icon:'/tech/supabase.svg',source:'Postgres Database & Auth'},
  {name:'AI & ML',category:'AI, Logic & Data',icon:'/tech/aiml.svg',source:'Artificial Intelligence (A)'},
  {name:'Data Structures & Algorithms',category:'CS Foundations',icon:'/tech/dsa.svg',source:'UIT Semester III (A)'},
  {name:'Computer Architecture',category:'CS Foundations',icon:'/tech/architecture.svg',source:'Digital Systems & Arch (A+)'},
@@ -56,7 +60,11 @@ const techSkills = [
  {name:'Git',category:'Tools & Cloud',icon:'/tech/git.svg',source:'Version Control'},
  {name:'GitHub',category:'Tools & Cloud',icon:'/tech/github.svg',source:'Team & Open-Source Repos'},
  {name:'Vercel',category:'Tools & Cloud',icon:'/tech/vercel.svg',source:'Cloud Web Deployment'},
- {name:'VS Code',category:'Tools & Cloud',icon:'/tech/vscode.svg',source:'Development Environment'},
+ {name:'Render',category:'Tools & Cloud',icon:'/tech/render.svg',source:'Cloud App Hosting'},
+ {name:'Railway',category:'Tools & Cloud',icon:'/tech/railway.svg',source:'Full-Stack Cloud Deploy'},
+ {name:'VS Code',category:'Tools & Cloud',icon:'/tech/vscode.svg',source:'Code Editor & Debugging'},
+ {name:'Cursor',category:'Tools & Cloud',icon:'/tech/cursor.svg',source:'AI-First Code Editor'},
+ {name:'Canva',category:'Tools & Cloud',icon:'/tech/canva.svg',source:'Graphics & Visual Design'},
 ];
 type Certificate = typeof certificates[number];
 function App(){
