@@ -111,13 +111,16 @@ function GlassTabs({items,value,onChange,label}:{items:readonly string[];value:s
  };
  useLayoutEffect(()=>{measure();},[value,items.length]);
  useEffect(()=>{
+  const wrap=wrapRef.current;
   const onResize=()=>measure();
   window.addEventListener('resize',onResize,{passive:true});
-  return ()=>window.removeEventListener('resize',onResize);
+  let ro:ResizeObserver|null=null;
+  if(wrap&&'ResizeObserver' in window){ro=new ResizeObserver(()=>measure());ro.observe(wrap);}
+  return ()=>{window.removeEventListener('resize',onResize);ro?.disconnect();};
  },[value]);
  return <div ref={wrapRef} className="filters glass-tabs" role="group" aria-label={label} data-reveal="">
   {pill.ready&&<span className="tab-indicator" aria-hidden="true" style={{transform:`translate3d(${pill.x}px,${pill.y}px,0)`,width:`${pill.w}px`,height:`${pill.h}px`}}/>}
-  {items.map(item=><button key={item} type="button" className={`liquid-btn tab-btn${value===item?' selected':''}`} aria-pressed={value===item} onClick={e=>{triggerRipple(e);onChange(item);}}>{item}</button>)}
+  {items.map(item=><button key={item} type="button" className={`liquid-btn tab-btn${value===item?' selected':''}`} aria-pressed={value===item} onClick={e=>{triggerRipple(e);onChange(item);e.currentTarget.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});}}>{item}</button>)}
  </div>;
 }
 function App(){
@@ -126,12 +129,20 @@ function App(){
  const dialog=useRef<HTMLDialogElement>(null);
  const progressBar=useRef<HTMLDivElement>(null);
  const heroArt=useRef<HTMLDivElement>(null);
+ const headerRef=useRef<HTMLElement>(null);
  const desktopNavRef=useRef<HTMLDivElement>(null);
  const [navPill,setNavPill]=useState<{x:number;w:number;visible:boolean}>({x:0,w:0,visible:false});
  const smoothTarget=useRef<number|null>(null);
  const smoothAnimating=useRef(false);
  const activeRef=useRef<Certificate|null>(null);
  activeRef.current=active;
+ const scrollToTop=(e?:React.MouseEvent)=>{
+  if(e) e.preventDefault();
+  smoothTarget.current=null;
+  smoothAnimating.current=false;
+  const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  window.scrollTo({top:0,behavior:reduced?'instant':'smooth'});
+ };
  const navigate=(next:PageId,e?:React.MouseEvent)=>{
   if(e){if(e.metaKey||e.ctrlKey||e.shiftKey||e.altKey||e.button!==0) return;e.preventDefault();}
   setMenu(false);
@@ -139,10 +150,18 @@ function App(){
   smoothAnimating.current=false;
   const destPath=next==='home'?'/':`/${next}`;
   if(window.location.pathname!==destPath||window.location.hash){window.history.pushState(null,'',destPath);}
-  if(next===page){window.scrollTo({top:0,behavior:'smooth'});return;}
+  if(next===page){scrollToTop();return;}
   setPage(next);
   window.scrollTo({top:0,behavior:'instant'});
  };
+ useEffect(()=>{
+  if(!menu) return;
+  const onKey=(e:KeyboardEvent)=>{if(e.key==='Escape') setMenu(false);};
+  const onDown=(e:MouseEvent)=>{if(headerRef.current&&!headerRef.current.contains(e.target as Node)) setMenu(false);};
+  window.addEventListener('keydown',onKey);
+  document.addEventListener('mousedown',onDown);
+  return ()=>{window.removeEventListener('keydown',onKey);document.removeEventListener('mousedown',onDown);};
+ },[menu]);
  useLayoutEffect(()=>{
   const updateNavPill=()=>{
    const wrap=desktopNavRef.current;
@@ -153,7 +172,9 @@ function App(){
   };
   updateNavPill();
   window.addEventListener('resize',updateNavPill,{passive:true});
-  return ()=>window.removeEventListener('resize',updateNavPill);
+  let ro:ResizeObserver|null=null;
+  if(desktopNavRef.current&&'ResizeObserver' in window){ro=new ResizeObserver(()=>updateNavPill());ro.observe(desktopNavRef.current);}
+  return ()=>{window.removeEventListener('resize',updateNavPill);ro?.disconnect();};
  },[page]);
  useEffect(()=>{
   const hash=window.location.hash.replace(/^#\/?/,'').toLowerCase() as PageId;
@@ -307,7 +328,7 @@ function App(){
  const prevPage=idx>0?pageOrder[idx-1]:null;
  const nextPage=idx<pageOrder.length-1?pageOrder[idx+1]:pageOrder[0];
  return <><a className="skip" href="#main">Skip to content</a><div className="scroll-progress" aria-hidden="true"><div ref={progressBar}/></div><div className="ambient" aria-hidden="true"><span className="ambient-orb orb-a"/><span className="ambient-orb orb-b"/><span className="ambient-orb orb-c"/></div>
- <header className={`nav-wrap${scrolled?' is-scrolled':''}`}><nav className="nav glass" aria-label="Main navigation"><a href="/" className="brand" aria-label="Home" onClick={e=>navigate('home',e)}><img className="brand-logo" src="/pppk-logo.png" alt="Pppk" width="110" height="42" decoding="async"/></a><div ref={desktopNavRef} className="desktop-nav">{navPill.visible&&<span className="nav-indicator" aria-hidden="true" style={{transform:`translate3d(${navPill.x}px,0,0)`,width:`${navPill.w}px`}}/>}{nav.map(([n,id])=><a key={id} href={id==='home'?'/':`/${id}`} className={page===id?'active':''} aria-current={page===id?'page':undefined} onClick={e=>navigate(id,e)}>{n}</a>)}</div><a className={`nav-contact liquid-btn${page==='contact'?' active':''}`} href="/contact" aria-current={page==='contact'?'page':undefined} onClick={e=>{triggerRipple(e);navigate('contact',e);}}>Let’s connect <ArrowUpRight size={15}/></a><button type="button" className="menu-button liquid-btn" aria-label={menu?'Close navigation':'Open navigation'} aria-expanded={menu} aria-controls="mobile-nav" onClick={e=>{triggerRipple(e);setMenu(!menu);}}>{menu?<X size={20}/>:<Menu size={20}/>}</button></nav>{menu&&<div id="mobile-nav" className="mobile-nav glass">{[...nav,['Contact','contact' as PageId] as [string,PageId]].map(([n,id])=><a key={id} href={id==='home'?'/':`/${id}`} className={page===id?'active':''} aria-current={page===id?'page':undefined} onClick={e=>navigate(id,e)}>{n}<ArrowUpRight size={18}/></a>)}</div>}</header>
+ <header ref={headerRef} className={`nav-wrap${scrolled?' is-scrolled':''}`}><nav className="nav glass" aria-label="Main navigation"><a href="/" className="brand" aria-label="Home" onClick={e=>navigate('home',e)}><img className="brand-logo" src="/pppk-logo.png" alt="Pppk" width="110" height="42" decoding="async"/></a><div ref={desktopNavRef} className="desktop-nav">{navPill.visible&&<span className="nav-indicator" aria-hidden="true" style={{transform:`translate3d(${navPill.x}px,0,0)`,width:`${navPill.w}px`}}/>}{nav.map(([n,id])=><a key={id} href={id==='home'?'/':`/${id}`} className={page===id?'active':''} aria-current={page===id?'page':undefined} onClick={e=>navigate(id,e)}>{n}</a>)}</div><a className={`nav-contact liquid-btn${page==='contact'?' active':''}`} href="/contact" aria-current={page==='contact'?'page':undefined} onClick={e=>{triggerRipple(e);navigate('contact',e);}}>Let’s connect <ArrowUpRight size={15}/></a><button type="button" className="menu-button liquid-btn" aria-label={menu?'Close navigation':'Open navigation'} aria-expanded={menu} aria-controls="mobile-nav" onClick={e=>{triggerRipple(e);setMenu(!menu);}}>{menu?<X size={20}/>:<Menu size={20}/>}</button></nav>{menu&&<div id="mobile-nav" className="mobile-nav glass">{[...nav,['Contact','contact' as PageId] as [string,PageId]].map(([n,id])=><a key={id} href={id==='home'?'/':`/${id}`} className={page===id?'active':''} aria-current={page===id?'page':undefined} onClick={e=>navigate(id,e)}>{n}<ArrowUpRight size={18}/></a>)}</div>}</header>
  <main id="main" className="page-stage" key={page}>
  {page==='home'&&<>
  <section id="home" className="hero section-shell"><div className="hero-copy"><div className="eyebrow availability hero-in" style={stagger(0)}><span/> OPEN TO HACKATHON COLLABORATIONS</div><p className="hello hero-in" style={stagger(1)}>Hi there, I’m Phyo <span aria-hidden="true">✧</span></p><h1 className="hero-in" style={stagger(2)}>Phyo Pyae<br/>Pyae Khaing<span className="period">.</span></h1><p className="hero-role hero-in" style={stagger(3)}>Developer by curiosity.<br/><em>Problem solver at heart.</em></p><p className="intro hero-in" style={stagger(4)}>Third-year UIT student building for the web, exploring software development, and finding possibilities in AI & ML.</p><div className="hero-actions hero-in" style={stagger(5)}><a className="button primary liquid-btn" href="/projects" onClick={e=>{triggerRipple(e);navigate('projects',e);}}>Explore my work <ArrowUpRight size={18}/></a><a className="button secondary liquid-btn" href={github} target="_blank" rel="noreferrer" onClick={triggerRipple}><Github size={18}/> GitHub</a></div><div className="hero-meta hero-in" style={stagger(6)}><img className="uit-icon-inline" src="/uit-logo.png" alt="UIT logo" width="22" height="20" decoding="async"/> University of Information Technology <span>•</span> Year 03</div></div>
@@ -329,8 +350,8 @@ function App(){
   {prevPage?<a href={prevPage.path} className="pager-link glass liquid-btn" onClick={e=>{triggerRipple(e);navigate(prevPage.id,e);}}><ArrowLeft size={16}/><span><small>Previous</small><strong>{prevPage.label}</strong></span></a>:<span/>}
   <a href={nextPage.path} className="pager-link pager-next glass liquid-btn" onClick={e=>{triggerRipple(e);navigate(nextPage.id,e);}}><span><small>{nextPage.id==='home'?'Back to':'Next'}</small><strong>{nextPage.label}</strong></span><ArrowRight size={16}/></a>
  </nav>}
- </main><footer className="section-shell"><a className="brand" href="/" aria-label="Home" onClick={e=>navigate('home',e)}><img className="brand-logo brand-logo-footer" src="/pppk-logo.png" alt="Pppk" width="94" height="36" decoding="async"/></a><p>Made with care & a curious mind.</p><a className="footer-top" href="#top">Back to top ↑</a></footer>
- <a href="#top" className={`back-to-top glass liquid-btn${showTop?' is-shown':''}`} aria-label="Back to top" data-tooltip="Top" tabIndex={showTop?0:-1} onClick={triggerRipple}><ArrowUp size={18}/></a>
+ </main><footer className="section-shell"><a className="brand" href="/" aria-label="Home" onClick={e=>navigate('home',e)}><img className="brand-logo brand-logo-footer" src="/pppk-logo.png" alt="Pppk" width="94" height="36" decoding="async"/></a><p>Made with care & a curious mind.</p><a className="footer-top" href="#top" onClick={scrollToTop}>Back to top ↑</a></footer>
+ <a href="#top" className={`back-to-top glass liquid-btn${showTop?' is-shown':''}`} aria-label="Back to top" data-tooltip="Top" tabIndex={showTop?0:-1} onClick={e=>{triggerRipple(e);scrollToTop(e);}}><ArrowUp size={18}/></a>
  <dialog ref={dialog} className="glass-modal" onCancel={()=>setActive(null)} onClick={e=>{if(e.target===e.currentTarget)setActive(null)}} aria-labelledby="certificate-title"><button type="button" className="dialog-close liquid-btn" onClick={()=>setActive(null)} aria-label="Close certificate"><X size={18}/></button>{active&&<><div className="dialog-description"><Award size={22}/><h2 id="certificate-title">{active.title}</h2><p>{active.detail}</p></div><img src={`/certificates/${active.image}`} alt={`${active.title} certificate awarded to Phyo Pyae Pyae Khaing`} decoding="async"/></>}</dialog></>;
 }
 createRoot(document.getElementById('root')!).render(<React.StrictMode><App/></React.StrictMode>);
