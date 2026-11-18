@@ -19,7 +19,7 @@
 html{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
 body{overflow-x:clip;overscroll-behavior-y:none}
 /* GPU scroll smoothness: reserve expensive backdrop-filter for floating chrome only */
-.project-card.glass,.skill-card.glass,.certificate.glass,.github-section.glass{backdrop-filter:none;background:#ffffffd9}
+.project-card.glass,.skill-card.glass,.tech-tile.glass,.certificate.glass,.github-section.glass{backdrop-filter:none;background:#ffffffd9}
 .about-art.glass{backdrop-filter:none;background:linear-gradient(150deg,#f5ebf3,#eee5f7)}
 .nav.glass,.mobile-nav.glass,.code-window.glass,.floating-label.glass,.back-to-top.glass{backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
 /* Smooth pointer spotlight on cards */
@@ -38,6 +38,18 @@ body{overflow-x:clip;overscroll-behavior-y:none}
 .accordion-item.is-open .accordion-panel{grid-template-rows:1fr;opacity:1}
 .accordion-inner{overflow:hidden}
 .accordion-inner dl{margin:0;padding:0 17px 14px}
+/* Tech Skills Grid with Official Icons */
+.tech-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:14px}
+.tech-tile{display:flex;align-items:center;gap:14px;padding:15px 16px;border-radius:15px;border:1px solid #ece0ee;transition:transform .26s var(--ease-out),box-shadow .26s var(--ease-out),border-color .26s var(--ease-out),background .26s var(--ease-out)}
+.tech-tile:hover{transform:translateY(-4px);box-shadow:0 14px 30px #77558014;border-color:#d8c1de;background:#fff}
+.tech-icon-box{width:46px;height:46px;border-radius:12px;background:#faf4f9;border:1px solid #efe4f1;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .28s var(--ease-out),background .28s var(--ease-out),border-color .28s var(--ease-out)}
+.tech-tile:hover .tech-icon-box{transform:scale(1.08) rotate(-3deg);background:#fff;border-color:#e2cde6}
+.tech-icon-box img{width:28px;height:28px;object-fit:contain;display:block}
+.tech-meta{min-width:0}
+.tech-meta h3{font-size:14px;font-weight:600;letter-spacing:-.015em;line-height:1.25;color:#362c40}
+.tech-meta small{display:block;font-size:10px;color:var(--muted);margin-top:4px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:560px){.tech-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.tech-tile{padding:12px;gap:10px}.tech-icon-box{width:38px;height:38px;border-radius:10px}.tech-icon-box img{width:22px;height:22px}.tech-meta h3{font-size:12.5px}.tech-meta small{font-size:9px}}
+
 /* Floating Back-to-Top button */
 .back-to-top{position:fixed;right:24px;bottom:24px;z-index:30;width:44px;height:44px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:#8b4c70;background:#ffffffcf;border:1px solid #e6d7ea;box-shadow:0 10px 26px #58315318;opacity:0;pointer-events:none;transform:translateY(14px) scale(.9);transition:opacity .32s var(--ease-out),transform .32s var(--ease-out),background .22s var(--ease-out),color .22s var(--ease-out)}
 .back-to-top.is-shown{opacity:1;pointer-events:auto;transform:translateY(0) scale(1)}
